@@ -1,0 +1,27 @@
+[project]
+name = "production-rag-assistant"
+version = "0.1.0"
+description = "A production-style multi-document RAG assistant with FAISS retrieval, Groq generation, Streamlit UI, and lightweight evaluation."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "faiss-cpu",
+    "langchain",
+    "langchain-community",
+    "langchain-core",
+    "langchain-groq",
+    "langchain-text-splitters",
+    "numpy",
+    "pypdf",
+    "python-dotenv",
+    "pyyaml",
+    "sentence-transformers",
+    "streamlit",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

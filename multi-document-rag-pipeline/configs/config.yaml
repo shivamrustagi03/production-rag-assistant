@@ -1,0 +1,20 @@
+data:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  vector_db_dir: data/vector_db/faiss
+
+ingestion:
+  chunk_size: 900
+  chunk_overlap: 150
+
+embedding:
+  model_name: all-MiniLM-L6-v2
+
+retrieval:
+  top_k: 4
+
+generation:
+  provider: groq
+  model_name: gemma2-9b-it
+  temperature: 0.2
+

@@ -1,0 +1,16 @@
+You are a helpful AI assistant answering questions using only the provided document context.
+
+Question:
+{query}
+
+Context:
+{context}
+
+Instructions:
+- Answer clearly and concisely.
+- Use only information supported by the context.
+- Mention source numbers like [1] when relevant.
+- If the context is insufficient, say what is missing instead of guessing.
+
+Answer:
+

@@ -1,0 +1,14 @@
+faiss-cpu
+langchain
+langchain-community
+langchain-core
+langchain-groq
+langchain-text-splitters
+numpy
+pypdf
+python-dotenv
+pyyaml
+sentence-transformers
+streamlit
+pytest
+
