@@ -10,6 +10,21 @@ This project implements a **Retrieval-Augmented Generation (RAG)** pipeline that
 
 Users can upload **PDF and text documents**, ask questions in natural language, and receive **context-grounded responses with source references**.
 
+## 📸 Application Demo
+
+### Multi-Document Question Answering Interface
+
+The application supports **PDF/TXT document ingestion**, **retrieval-grounded question answering**, and **source-aware responses** through an interactive Streamlit interface.
+
+<p align="center">
+  <img src="images/rag-chat-demo.png.png">
+</p>
+
+### Example Query
+
+```text
+Summarize the project report
+
 ### Key Goals
 
 * Reduce hallucinations through retrieval-grounded generation
