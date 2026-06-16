@@ -1,218 +1,591 @@
 # 🚀 Production-Style Multi-Document RAG Assistant
 
-A modular Retrieval-Augmented Generation (RAG) system for document-grounded question answering using **FAISS, SentenceTransformers, Groq LLMs, and Streamlit**.
+A modular Retrieval-Augmented Generation system for document-grounded question answering using **FAISS, SentenceTransformers, Groq LLMs, LangChain, and Streamlit**.
 
-Designed as a production-style AI Engineering project showcasing modular architecture, configurable pipelines, persistent retrieval, source-grounded responses, Docker support, testing, and evaluation.
+The system enables users to upload multiple documents, process them through an ingestion pipeline, store semantic representations, retrieve relevant information using vector similarity search, and generate grounded responses with source references.
 
-## 📌 Project Overview
+---
 
-This project implements a **Retrieval-Augmented Generation (RAG)** pipeline that retrieves relevant document chunks before generating answers.
+# 📌 Project Overview
 
-Users can upload **PDF and text documents**, ask questions in natural language, and receive **context-grounded responses with source references**.
+This project implements an end-to-end document question-answering system where users can interact with their own documents through a conversational interface.
 
-## 📸 Application Demo
+The system follows a modular architecture separating:
 
-### Multi-Document Question Answering Interface
+- Document ingestion
+- Text preprocessing
+- Chunk creation
+- Embedding generation
+- Vector storage
+- Retrieval
+- Response generation
 
-The application supports **PDF/TXT document ingestion**, **retrieval-grounded question answering**, and **source-aware responses** through an interactive Streamlit interface.
+The objective is to build a production-style GenAI application with clear separation between retrieval and generation components.
 
-<p align="center">
-  <img src="images/rag-chat-demo.png.png">
-</p>
+---
 
-### Example Query
+# 🏗️ System Architecture
 
-```text
-Summarize the project report
+                     Documents
+                   (PDF / TXT)
+                        |
+                        ↓
+              Document Ingestion Layer
+                        |
+                        ↓
+             Text Cleaning & Processing
+                        |
+                        ↓
+             Recursive Text Chunking
+                        |
+                        ↓
+          SentenceTransformer Embeddings
+                        |
+                        ↓
+               FAISS Vector Index
+                        |
+                        |
+                        |
+                        ↓
 
-### Key Goals
+                  User Query
+                        |
+                        ↓
+            Query Embedding Generation
+                        |
+                        ↓
+          Similarity Search using FAISS
+                        |
+                        ↓
+             Top-K Relevant Chunks
+                        |
+                        ↓
+             Prompt Construction
+                        |
+                        ↓
+             Groq LLM (Gemma2-9B)
+                        |
+                        ↓
+          Grounded Response + Sources
 
-* Reduce hallucinations through retrieval-grounded generation
-* Enable question answering over custom documents
-* Demonstrate production-oriented GenAI system design
-* Showcase AI Engineering best practices
+---
 
-## 🏗️ Architecture
+# 🔄 End-to-End Pipeline
 
-```text
-Documents (PDF/TXT)
-        ↓
-Document Loading
-        ↓
-Preprocessing
-        ↓
-Recursive Chunking
-        ↓
-SentenceTransformer Embeddings
-        ↓
-FAISS Vector Database
-        ↓
+## 1. Document Ingestion Pipeline
+
+The ingestion pipeline is responsible for converting raw documents into a format that can be processed by the retrieval system.
+
+Supported document types:
+
+- PDF
+- TXT
+
+
+The pipeline performs:
+
+- Document loading
+- Text extraction
+- Basic preprocessing
+- Metadata preservation
+
+
+The output of this stage is a collection of processed document objects that are passed to the chunking stage.
+
+---
+
+# 2. Document Chunking
+
+Large documents are divided into smaller chunks before embedding generation.
+
+The project uses:
+
+
+RecursiveCharacterTextSplitter
+
+
+Chunking is performed because the retrieval system works more effectively with smaller semantic units instead of entire documents.
+
+The chunking process maintains:
+
+- Configurable chunk size
+- Chunk overlap
+- Document metadata
+
+
+Example flow:
+
+
+Document
+
+↓
+
+Chunk 1
+Chunk 2
+Chunk 3
+
+↓
+
+Embedding Generation
+
+
+The overlap between chunks helps preserve context between adjacent sections.
+
+---
+
+# 3. Embedding Generation
+
+After documents are split into chunks, each chunk is converted into a numerical representation using an embedding model.
+
+Embedding model used:
+
+
+SentenceTransformer
+(all-MiniLM-L6-v2)
+
+
+The embedding pipeline converts:
+
+
+Text Chunk
+
+↓
+
+Vector Representation
+
+
+These vectors capture semantic information and allow similarity-based retrieval.
+
+The same embedding model is used for:
+
+1. Document indexing
+2. User query conversion
+
+
+---
+
+# 4. Vector Storage Using FAISS
+
+The project uses FAISS as the vector storage and similarity search engine.
+
+FAISS is responsible for:
+
+- Storing document embeddings
+- Building the vector index
+- Performing similarity search
+- Retrieving relevant chunks
+
+
+During ingestion:
+
+
+Document Chunk
+
+↓
+
+Embedding Vector
+
+↓
+
+FAISS Index
+
+
+During querying:
+
+
 User Query
-        ↓
-Top-K Retrieval (k=4)
-        ↓
-Prompt Assembly
-        ↓
-Groq LLM (gemma2-9b-it)
-        ↓
-Grounded Response + Sources
-```
 
-## ✨ Features
+↓
 
-### Core Features
+Query Vector
 
-* Multi-document retrieval (PDF + TXT)
-* Persistent FAISS vector database
-* Configurable chunking and retrieval
-* Source-grounded answers
-* Prompt externalization
-* Modular architecture
+↓
 
-### Frontend
+FAISS Similarity Search
 
-* Streamlit chat interface
-* Multi-file upload
-* Session history
-* Loading indicators
-* Source references
+↓
 
-### Engineering
+Relevant Documents
 
-* Docker support
-* `.env` management
-* YAML configs
-* Logging
-* Evaluation module
-* Unit tests
 
-## 🧠 Tech Stack
+The vector index is persisted so that embeddings do not need to be regenerated every time the application starts.
 
-| Category         | Technology            |
-| ---------------- | --------------------- |
-| Language         | Python                |
-| LLM              | Groq (`gemma2-9b-it`) |
-| Embeddings       | `all-MiniLM-L6-v2`    |
-| Vector DB        | FAISS                 |
-| Frontend         | Streamlit             |
-| Frameworks       | LangChain             |
-| Testing          | Pytest                |
-| Config           | YAML + dotenv         |
-| Containerization | Docker                |
+---
 
-## 📂 Project Structure
+# 5. Retrieval Pipeline
 
-```text
+The retrieval layer connects user queries with stored document knowledge.
+
+The retrieval process:
+
+
+User Question
+
+↓
+
+Query Embedding
+
+↓
+
+Vector Similarity Search
+
+↓
+
+Top-K Relevant Chunks
+
+↓
+
+Context for LLM
+
+
+The retriever is responsible for finding the most relevant document sections based on semantic similarity.
+
+The retrieved context is then passed to the generation pipeline.
+
+---
+
+# 6. Prompt Construction and Generation
+
+The generation layer combines:
+
+- User query
+- Retrieved document context
+- System instructions
+
+to create the final prompt.
+
+Flow:
+
+
+Retrieved Context
+
+User Question
+
+↓
+
+Prompt Template
+
+↓
+
+Groq LLM
+
+↓
+
+Generated Response
+
+
+The LLM used:
+
+
+Groq - Gemma2-9B-IT
+
+
+The response is generated using retrieved information instead of relying only on the model's internal knowledge.
+
+---
+
+# 📂 Project Structure
+
+
 production-rag-assistant/
+
+│
 ├── app/
-├── configs/
-├── data/
-├── evaluation/
-├── experiments/
+│ │
+│ ├── ingestion/
+│ │ ├── document_loader.py
+│ │ ├── preprocessing.py
+│ │ └── text_splitter.py
+│ │
+│ ├── retrieval/
+│ │ ├── embeddings.py
+│ │ ├── vector_store.py
+│ │ └── retriever.py
+│ │
+│ ├── generation/
+│ │ ├── prompt_builder.py
+│ │ ├── llm.py
+│ │ └── response_generator.py
+│ │
+│ ├── core/
+│ │ └── config.py
+│
 ├── frontend/
+│ └── streamlit_app.py
+│
+├── configs/
+│
 ├── prompts/
+│
+├── evaluation/
+│
 ├── tests/
+│
+├── main.py
+│
 ├── Dockerfile
-├── README.md
-└── main.py
-```
+│
+└── README.md
 
-## ⚙️ Run Locally
 
-```bash
-git clone https://github.com/shivamrustagi03/production-rag-assistant.git
-cd production-rag-assistant
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-```
+---
 
-Create `.env`
+# 🧩 Core Components
 
-```env
-GROQ_API_KEY=your_api_key
-```
+## Document Loader
 
-Run Streamlit:
+Responsible for:
 
-```bash
-streamlit run frontend/streamlit_app.py
-```
+- Reading uploaded files
+- Extracting text
+- Creating document objects
+- Maintaining metadata
 
-## 🐳 Docker
 
-```bash
-docker build -t production-rag-assistant .
-docker run -p 8501:8501 production-rag-assistant
-```
+---
 
-## 🧪 Testing
+## Text Processing Module
 
-```bash
-pytest
-```
+Responsible for:
 
-Current coverage:
+- Cleaning extracted content
+- Preparing documents before chunking
 
-* Retrieval pipeline
-* Chunking logic
 
-## 📊 Evaluation
+---
 
-Includes a lightweight evaluation pipeline for:
+## Chunking Module
 
-* Retrieved chunks
-* Source inspection
-* Answer previews
+Responsible for:
 
-Future metrics:
+- Splitting documents into smaller units
+- Maintaining overlap
+- Preparing chunks for embedding generation
 
-* Precision@K
-* Faithfulness
-* Groundedness
-* Answer relevancy
 
-## 📸 Screenshots
+---
 
-Add screenshots for:
+## Embedding Module
 
-* Streamlit UI
-* Document upload flow
-* Source-grounded responses
+Responsible for:
 
-## 💼 Skills Demonstrated
+- Loading the embedding model
+- Converting text chunks into vectors
+- Generating query embeddings
 
-* Retrieval-Augmented Generation (RAG)
-* Vector Databases (FAISS)
-* Embedding Models
-* Prompt Engineering
-* Streamlit Frontend
-* Modular Software Design
-* Dockerization
-* Testing & Evaluation
-* Production-Oriented AI Engineering
 
-## 🎯 Resume Positioning
+---
 
-**Production-Style Multi-Document RAG Assistant**
+## Vector Store Module
 
-Built a modular Retrieval-Augmented Generation system for document-grounded QA using SentenceTransformers, FAISS, Groq, and Streamlit with persistent retrieval, prompt-managed generation, Docker support, and testing.
+Responsible for:
 
-## 🧠 Interview Talking Points
+- Creating FAISS index
+- Saving and loading embeddings
+- Performing similarity search
 
-* Why FAISS for vector search
-* Why recursive chunking
-* Config-driven architecture
-* External prompt management
-* Tradeoffs of dense retrieval
 
-## 🚀 Future Improvements
+---
 
-* FastAPI backend
-* Hybrid retrieval
-* Reranking
-* Metadata filtering
-* Streaming responses
-* Better evaluation metrics
-* CI/CD
-* Observability
+## Retrieval Module
+
+Responsible for:
+
+- Query processing
+- Retrieving relevant chunks
+- Passing context to generation
+
+
+---
+
+## Generation Module
+
+Responsible for:
+
+- Building prompts
+- Calling the LLM
+- Formatting final responses
+
+
+---
+
+# ⚙️ Configuration Management
+
+The project separates configuration from implementation logic.
+
+Configuration handles:
+
+- Model selection
+- Chunking parameters
+- Retrieval settings
+- Paths
+- Environment variables
+
+
+The project uses:
+
+- YAML configuration files
+- `.env` variables
+
+
+This keeps the system flexible and easier to modify.
+
+---
+
+# 🖥️ Application Flow
+
+## Document Upload Flow
+
+
+User uploads documents
+
+↓
+
+Streamlit interface receives files
+
+↓
+
+Documents are loaded
+
+↓
+
+Text is processed
+
+↓
+
+Chunks are created
+
+↓
+
+Embeddings are generated
+
+↓
+
+FAISS index is created
+
+
+---
+
+## Question Answering Flow
+
+
+User enters question
+
+↓
+
+Query embedding generated
+
+↓
+
+FAISS searches similar vectors
+
+↓
+
+Relevant chunks retrieved
+
+↓
+
+Prompt is constructed
+
+↓
+
+Groq LLM generates response
+
+↓
+
+Answer displayed with sources
+
+
+---
+
+# 🛠️ Design Decisions
+
+## Why FAISS?
+
+FAISS was selected because:
+
+- The project can run locally
+- It provides efficient similarity search
+- It avoids external infrastructure dependency
+
+
+For larger production deployments, alternatives like Pinecone, Milvus, or Weaviate can be considered.
+
+---
+
+## Why SentenceTransformer?
+
+The embedding model was selected because:
+
+- It is open source
+- It can run locally
+- It provides efficient semantic embeddings
+
+
+---
+
+## Why Modular Architecture?
+
+The project separates responsibilities into independent modules:
+
+- Ingestion
+- Retrieval
+- Generation
+- Frontend
+
+This improves:
+
+- Maintainability
+- Testing
+- Future scalability
+
+
+---
+
+# 🚀 Future Improvements
+
+Potential improvements:
+
+- Hybrid search (BM25 + vector retrieval)
+- Metadata filtering
+- Reranking models
+- Streaming responses
+- Better evaluation metrics
+- FastAPI backend
+- Observability using LangSmith
+- CI/CD pipeline
+
+---
+
+# 🧪 Evaluation
+
+The project includes evaluation support for analyzing:
+
+- Retrieved document chunks
+- Source relevance
+- Generated responses
+
+
+Future evaluation improvements:
+
+- Faithfulness
+- Context relevance
+- Answer relevance
+- Precision@K
+- Recall@K
+
+---
+
+# 🛠️ Technologies Used
+
+| Component | Technology |
+|---|---|
+| Language | Python |
+| LLM | Groq Gemma2-9B |
+| Embeddings | SentenceTransformers |
+| Vector Store | FAISS |
+| Framework | LangChain |
+| Frontend | Streamlit |
+| Testing | Pytest |
+| Configuration | YAML + dotenv |
+| Containerization | Docker |
